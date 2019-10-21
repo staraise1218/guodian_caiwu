@@ -1,0 +1,79 @@
+
+<div class="phone-lists">
+	<ul>
+		<li class="personal"><a href="{:U('Home/user/info')}" style="display:block;height:49px;"></a></li>
+		<li class="kf"><a href="javascript:;" onclick="openSDK()" style="display:block;height:49px;"></a></li>
+		<li class="collect"><a href="javascript:;" onclick="addFavorite(this);" style="display:block;height:49px;"></a></li>
+	</ul>
+</div>
+<!---->
+<!---->
+<div class="footer">
+    <div class="footer-content">
+
+	<div class="footer-grids">
+		<div class="address">
+			<p><a href="{:U('Topic/detail',array('topic_id'=>1))}">北京店：北京市朝阳区铭基国际创意公园i2</a></p>
+			<p><a href="{:U('Topic/detail',array('topic_id'=>1))}">北京店：北京市朝阳区东三环中路乐成中心SPACE3 二层中岛</a></p>
+			<p><a href="javascript:;">电话：010-80456828</a></p>
+		</div>
+	</div>
+	<div class="footer-bottom">
+		<p>统一社会信用代码91110105MA007LB61D</p>
+		<p>[  法律声明  ]  -  京ICP备13035513号-1  -  © 2017 WJSMCJS SA</p>
+	</div>
+	<img src="__STATIC__/image/icon/logo.png" alt="">
+    </div>
+	
+</div>
+<script src="__STATIC__/js/layer/layer-min.js"></script>
+<script type="text/javascript">
+
+    $(document).ready(function(){
+
+		$.ajax({
+			type : "GET",
+			url:"/index.php?m=Home&c=Cart&a=header_cart_list",//+tab,
+			success: function(data){
+			 
+				cart_cn = getCookie('cn');
+
+				if(isNaN(cart_cn)) cart_cn = 0;
+				$('#cart_quantity').html(cart_cn);						
+			}
+		});	
+	});
+</script>
+<script>
+	(function (w, d, n, a, j) {
+		w[n] = w[n] || function () {
+			(w[n].a = w[n].a || []).push(arguments);
+		};
+		j = d.createElement('script');
+		j.async = true;
+		j.src ='https://qiyukf.com/script/f7d7bda2488a94a7103e779cf1aa436c.js';
+		d.body.appendChild(j);
+	})(window, document, 'ysf');
+		
+	// var isSdkReady = true;
+ //    ysf('onLayerload', function () {
+ //        isSdkReady = true;
+ //    })
+
+ //    window.openSdk = function () {
+ //        if (isSdkReady) {
+ //            ysf('open');
+ //        } else {
+ //            alert('sdk尚未加载成功，请稍后再试');
+ //        }
+ //    }
+
+
+    ysf('config', {
+        uid: '{$Think.cookie.PHPSESSID}',
+        name:'{$Think.cookie.uname|urldecode}',
+        email:'{$Think.cookie.email}',
+        mobile:'{$Think.cookie.mobile}',
+    });
+
+</script>
