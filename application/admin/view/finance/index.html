@@ -87,13 +87,13 @@
         </div>
         <div class="tDiv">
             <div class="tDiv2">
-                <!-- <div class="fbutton">
-                    <a href="{:U('store/add')}">
-                        <div class="add" title="添加会员">
-                            <span><i class="fa fa-plus"></i>添加店铺</span>
+                <div class="fbutton">
+                    <a href="javascript:;" onclick="exportFinanceList()">
+                        <div class="add" title="导出">
+                            <span><i class="fa fa-share"></i>导出</span>
                         </div>
                     </a>
-                </div> -->
+                </div>
             </div>
             <div style="clear:both"></div>
         </div>
@@ -219,6 +219,14 @@
         });
     }
 
+    function exportFinanceList(){
+        var store_id = $('select[name=store_id]').val();
+        var start_time = $('input[name=start_time]').val();
+        var end_time = $('input[name=end_time]').val();
+
+        window.location = "{:U('finance/exportFinanceList')}"+'?store_id='+store_id+'&start_time='+start_time+'&end_time'+end_time;
+
+    }
 
 </script>
 </body>

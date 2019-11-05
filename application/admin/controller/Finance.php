@@ -108,6 +108,101 @@ class Finance extends Base {
 		return $this->fetch();
 	}
 
+    public function exportFinanceList(){
+        $start_time = strtotime(I('post.start_time', date('Y-m-d', strtotime('-3 month'))));
+        $end_time = strtotime(I('post.end_time', date('Y-m-d')));
+        $store_id = I('store_id');
+
+       
+        
+        if($store_id){
+            // 所选店铺的销售
+            $count = DB::name('store_admin')->where('store_id', $store_id)->count();
+            $AjaxPage = new AjaxPage($count, 10);
+            $salesList = DB::name('store_admin')->alias('sa')
+                ->join('admin a', 'sa.admin_id=a.admin_id', 'left')
+                ->where('sa.store_id', $store_id)
+                ->order("a.admin_id desc")
+                ->limit($AjaxPage->firstRow, $AjaxPage->listRows)
+                ->select();
+        } else {
+            $count = DB::name('admin')->where('role_id', config('SALE_ID'))->count();
+            $AjaxPage = new AjaxPage($count, 10);
+
+            $salesList = DB::name('admin')
+                ->where('role_id', config('SALE_ID'))
+                ->order("admin_id desc")
+                ->limit($AjaxPage->firstRow, $AjaxPage->listRows)
+                ->select();
+        }
+       
+
+        $end_time = strtotime('+1 day', $end_time);
+        $list = array();
+        $statistics_order_amount = 0;
+        $statistics_cost_price = 0;
+        $statistics_royalty = 0;
+        if(!empty($salesList)){
+            foreach ($salesList as $item) {
+                $data['admin_id'] = $item['admin_id'];
+                $data['realname'] = $item['realname'];
+                // 查找销售管理的会员
+                $users = db('users')->where('sale_id', $item['admin_id'])->column('user_id');
+                
+                if( ! empty($users)) {
+                    // 统计销售下会员的订单总额
+                     $total_order_amount = db('order')
+                        ->where('pay_status', 1)
+                        ->whereTime('add_time', 'between', [$start_time, $end_time])
+                        ->where('user_id', 'in', $users)
+                        ->sum('order_amount');
+
+                    // 统计销售下会员订单的成本价
+                     $total_cost_price = db('order')->alias('o')
+                        ->join('order_goods og', 'o.order_id=og.order_id')
+                        ->whereTime('add_time', 'between', [$start_time, $end_time])
+                        ->where('pay_status', 1)
+                        ->where('user_id', 'in', $users)
+                        ->sum('cost_price');
+
+                }
+                $total_order_amount = $total_order_amount ? $total_order_amount : 0;
+                $total_cost_price = $total_cost_price ? $total_cost_price : 0;
+
+                $data['total_order_amount'] = $total_order_amount;
+                $data['total_cost_price'] = $total_cost_price;
+                $data['total_royalty'] = ($total_order_amount - $total_cost_price)*0.1;
+                $list[] = $data;
+
+                // 统计
+                $statistics_order_amount += $total_order_amount;
+                $statistics_cost_price += $total_cost_price;
+                $statistics_royalty += $data['total_royalty'];
+            }
+        }
+
+        $strTable ='<table width="500" border="1">';
+        $strTable .= '<tr>';
+        $strTable .= '<td style="text-align:center;font-size:12px;width:60px;">姓名</td>';
+        $strTable .= '<td style="text-align:center;font-size:12px;" width="*">订单总额</td>';
+        $strTable .= '<td style="text-align:center;font-size:12px;" width="*">总成本</td>';
+        $strTable .= '<td style="text-align:center;font-size:12px;" width="*">提成</td>';
+        $strTable .= '</tr>';
+        if(is_array($list)){
+            foreach($list as $k=>$val){
+                $strTable .= '<tr>';
+                $strTable .= '<td style="text-align:center;font-size:12px;">'.$val['realname'].'</td>';
+                $strTable .= '<td style="text-align:left;font-size:12px;">'.$val['total_order_amount'].' </td>';
+                $strTable .= '<td style="text-align:left;font-size:12px;">'.$val['total_cost_price'].'</td>';
+                $strTable .= '<td style="text-align:left;font-size:12px;">'.$val['total_royalty'].'</td>';
+                $strTable .= '</tr>';
+            }
+            unset($userList);
+        }
+        $strTable .='</table>';
+        downloadExcel($strTable,'业绩');
+    }
+
     // 业绩详情
     public function detailOrderList(){
 
